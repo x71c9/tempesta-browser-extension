@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Sets up keyless Chrome Web Store publishing from GitHub Actions through
+# Workload Identity Federation:
+#
+#   - a Google Cloud project with the Chrome Web Store API enabled
+#   - a service account without keys, to be added to the Chrome Web Store
+#     publisher (Developer Dashboard -> Account)
+#   - a workload identity pool and an OIDC provider trusting GitHub Actions
+#     tokens only from release tags (refs/tags/v*) of this repository
+#
+# Idempotent: existing resources are left untouched. Prints the values used by
+# .github/workflows/publish.yml.
+#
+# Usage: scripts/setup-cws-publishing
+# Overrides: GCLOUD_ACCOUNT, PROJECT_ID
+# Requires: gcloud, logged in with `gcloud auth login <account>`
+set -euo pipefail
+
+ACCOUNT="${GCLOUD_ACCOUNT:-amministrazione@nebula7.net}"
+PROJECT_ID="${PROJECT_ID:-tempesta-x71c9}"
+PROJECT_NAME="Tempesta"
+REPOSITORY="x71c9/tempesta-browser-extension"
+POOL="github"
+PROVIDER="tempesta-browser-extension"
+SERVICE_ACCOUNT="cws-publisher"
+SERVICE_ACCOUNT_EMAIL="$SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com"
+
+g() {
+  gcloud --account "$ACCOUNT" --project "$PROJECT_ID" --quiet "$@"
+}
+
+if ! g projects describe "$PROJECT_ID" >/dev/null 2>&1; then
+  echo "Creating project $PROJECT_ID"
+  # Project IDs are unique across all of Google Cloud
+  if ! g projects create "$PROJECT_ID" --name "$PROJECT_NAME"; then
+    echo "Project ID $PROJECT_ID is not available, rerun with PROJECT_ID=<other-id>" >&2
+    exit 1
+  fi
+fi
+
+echo "Enabling APIs"
+g services enable \
+  chromewebstore.googleapis.com \
+  iam.googleapis.com \
+  iamcredentials.googleapis.com \
+  sts.googleapis.com
+
+if ! g iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" >/dev/null 2>&1; then
+  echo "Creating service account $SERVICE_ACCOUNT_EMAIL"
+  g iam service-accounts create "$SERVICE_ACCOUNT" \
+    --display-name "Chrome Web Store publisher"
+fi
+
+if ! g iam workload-identity-pools describe "$POOL" \
+  --location global >/dev/null 2>&1; then
+  echo "Creating workload identity pool $POOL"
+  g iam workload-identity-pools create "$POOL" \
+    --location global \
+    --display-name "GitHub Actions"
+fi
+
+if ! g iam workload-identity-pools providers describe "$PROVIDER" \
+  --location global --workload-identity-pool "$POOL" >/dev/null 2>&1; then
+  echo "Creating OIDC provider $PROVIDER"
+  g iam workload-identity-pools providers create-oidc "$PROVIDER" \
+    --location global \
+    --workload-identity-pool "$POOL" \
+    --display-name "$PROVIDER" \
+    --issuer-uri "https://token.actions.githubusercontent.com" \
+    --attribute-mapping "google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
+    --attribute-condition "assertion.repository == '$REPOSITORY' && assertion.ref.startsWith('refs/tags/v')"
+fi
+
+project_number="$(g projects describe "$PROJECT_ID" --format 'value(projectNumber)')"
+pool_path="projects/$project_number/locations/global/workloadIdentityPools/$POOL"
+
+echo "Allowing $REPOSITORY to act as $SERVICE_ACCOUNT_EMAIL"
+g iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
+  --role roles/iam.workloadIdentityUser \
+  --member "principalSet://iam.googleapis.com/$pool_path/attribute.repository/$REPOSITORY" \
+  >/dev/null
+
+echo
+echo "workload_identity_provider: $pool_path/providers/$PROVIDER"
+echo "service_account:            $SERVICE_ACCOUNT_EMAIL"
+echo
+echo "Add $SERVICE_ACCOUNT_EMAIL to the Chrome Web Store Developer Dashboard,"
+echo "under Account -> Service account."

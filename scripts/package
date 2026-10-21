@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Builds the release packages into artifacts/:
+#   tempesta-chromium-<version>.zip  Chrome Web Store package
+#   tempesta-firefox-<version>.zip   addons.mozilla.org package
+#   tempesta-sources-<version>.zip   source code for the addons.mozilla.org review
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+version="$(node -p 'require("./package.json").version')"
+
+rm -rf artifacts
+mkdir artifacts
+node build.mjs --release
+for target in chromium firefox; do
+  (cd "dist/$target" && zip -qr "../../artifacts/tempesta-$target-$version.zip" .)
+done
+git archive --format zip --output "artifacts/tempesta-sources-$version.zip" HEAD
+ls -1 artifacts

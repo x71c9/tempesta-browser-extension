@@ -1,0 +1,56 @@
+---
+# Bumps the version from the squashed PR title (feat! -> major, feat -> minor,
+# everything else -> patch), commits it and pushes the vX.Y.Z tag, which
+# triggers publish.yml.
+name: Release on PR Merge
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          # Pushes through branch protection, and tag pushes made with a
+          # personal token trigger other workflows (GITHUB_TOKEN ones do not)
+          token: ${{ secrets.BYPASS_BRANCH_RULE_PAT }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Configure Git
+        run: |
+          git config user.name "x71c9"
+          git config user.email "108585118+x71c9@users.noreply.github.com"
+
+      - name: Determine bump type and release
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "PR title: $PR_TITLE"
+          if echo "$PR_TITLE" | grep -qE "^[a-z]+(\(.+\))?!:" || \
+             echo "$PR_TITLE" | grep -q "BREAKING CHANGE:"; then
+            BUMP_TYPE="major"
+          elif echo "$PR_TITLE" | grep -qE "^feat(\(.+\))?:"; then
+            BUMP_TYPE="minor"
+          else
+            BUMP_TYPE="patch"
+          fi
+          echo "Version bump: $BUMP_TYPE"
+          npm version "$BUMP_TYPE" --message "chore(release): release v%s"
+          VERSION="v$(node -p 'require("./package.json").version')"
+          git push origin HEAD:master "$VERSION"
+          echo "Released $VERSION"

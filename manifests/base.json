@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Tempesta",
+  "description": "Keyboard-driven fuzzy finder that adds and opens bookmarks of the tempesta bookmark store.",
+  "homepage_url": "https://github.com/x71c9/tempesta-browser-extension",
+  "permissions": [
+    "nativeMessaging",
+    "activeTab",
+    "scripting",
+    "contextMenus"
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Tempesta: add this page",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "tempesta-add": {
+      "suggested_key": {
+        "default": "Alt+Shift+D"
+      },
+      "description": "Add the current page to the tempesta bookmark store"
+    },
+    "tempesta-open": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      },
+      "description": "Open a bookmark from the tempesta bookmark store"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "categories": {
+    "firefox": ["bookmarks"]
+  },
+  "summary": {
+    "en-US": "Keyboard-driven fuzzy finder that adds and opens bookmarks of the tempesta bookmark store."
+  },
+  "description": {
+    "en-US": "Browser integration for tempesta, the bookmark manager CLI inspired by pass. Two keyboard shortcuts open a minimal rofi-like finder over the current page: one adds the page to the bookmark store, the other opens a saved bookmark in a new tab.\n\nBookmarks are plain TOML files in ~/.bookmark-store, optionally versioned with git, shared with the tempesta command line.\n\nRequires the tempesta CLI with its native messaging host registered (tempesta native-host install). Source code and documentation: https://github.com/x71c9/tempesta-browser-extension"
+  },
+  "homepage": {
+    "en-US": "https://github.com/x71c9/tempesta-browser-extension"
+  },
+  "version": {
+    "license": "MIT",
+    "approval_notes": "The code is bundled, not minified, with esbuild. To rebuild from the attached source archive: Node.js 24, npm 11, then `npm ci && node build.mjs --release`; the add-on is generated in dist/firefox. The add-on talks to the tempesta CLI (https://github.com/x71c9/tempesta) through native messaging and sends no data anywhere else."
+  }
+}

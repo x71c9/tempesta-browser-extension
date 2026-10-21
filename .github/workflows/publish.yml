@@ -1,0 +1,141 @@
+---
+# Publishes a vX.Y.Z tag: GitHub release, Chrome Web Store, addons.mozilla.org.
+# Both stores receive the version for review; it goes live once approved.
+name: Publish
+run-name: "Publish ${{ github.ref_name }}"
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+concurrency:
+  group: publish
+  cancel-in-progress: false
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check that the tag matches package.json
+        run: |
+          version="v$(node -p 'require("./package.json").version')"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json $version"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build packages
+        run: scripts/package
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: artifacts/
+
+  github-release:
+    name: GitHub Release
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts/
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
+
+  chrome-web-store:
+    name: Chrome Web Store
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Workload Identity Federation: no Google credentials stored in GitHub
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts/
+
+      - name: Authenticate to Google
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/965274473485/locations/global/workloadIdentityPools/github/providers/tempesta-browser-extension
+          service_account: cws-publisher@tempesta-x71c9.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+
+      - name: Upload and submit for review
+        env:
+          CWS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+        run: scripts/publish-chrome artifacts/tempesta-chromium-*.zip
+
+  firefox-addons:
+    name: Firefox Add-ons
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts/
+
+      - name: Submit for review
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          unzip -q artifacts/tempesta-firefox-*.zip -d firefox
+          npx web-ext sign \
+            --channel listed \
+            --source-dir firefox \
+            --upload-source-code artifacts/tempesta-sources-*.zip \
+            --amo-metadata store/amo-metadata.json \
+            --approval-timeout 0

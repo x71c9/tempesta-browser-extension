@@ -1,0 +1,24 @@
+{
+  "name": "tempesta-browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser extension for the tempesta bookmark store",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc",
+    "lint": "tsc && web-ext lint --source-dir dist/firefox",
+    "start:firefox": "web-ext run --source-dir dist/firefox",
+    "start:chromium": "web-ext run --target chromium --source-dir dist/chromium"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.6",
+    "@types/node": "26.6.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "web-ext": "10.8.0"
+  }
+}

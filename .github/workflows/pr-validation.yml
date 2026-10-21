@@ -1,0 +1,60 @@
+---
+name: PR Validation
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, edited]
+permissions:
+  contents: read
+jobs:
+  validate-pr-title:
+    name: Validate PR Title (Future Squash Commit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Validating PR title: $PR_TITLE"
+          if echo "$PR_TITLE" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|security)(\(.+\))?\!?:.+"; then
+            echo "PR title follows conventional commit format"
+          else
+            echo "PR title must follow conventional commit format"
+            echo ""
+            echo "Valid formats:"
+            echo "- feat: add new feature"
+            echo "- fix: resolve bug"
+            echo "- feat!: breaking change"
+            echo "- fix(scope): specific fix"
+            echo ""
+            echo "Types: feat, fix, docs, style, refactor, perf, test, chore, security"
+            exit 1
+          fi
+
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint Firefox build
+        run: npx web-ext lint --source-dir dist/firefox

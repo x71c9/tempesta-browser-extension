@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Runs a browser with the extension against a throwaway bookmark store in
+# .dev/, seeded with a copy of ~/.bookmark-store (bookmark files only).
+#
+# Usage: scripts/dev-run <firefox|chromium>
+#
+# TEMPESTA_BIN selects the tempesta binary acting as native host
+# (default: ../tempesta/target/debug/tempesta, then tempesta in PATH).
+# Firefox reads native hosts only from ~/.mozilla/native-messaging-hosts, so
+# for Firefox the host manifest is installed there, pointing to TEMPESTA_BIN.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+browser="${1:-}"
+dev="$PWD/.dev"
+
+bin="${TEMPESTA_BIN:-}"
+if [ -z "$bin" ]; then
+  if [ -x ../tempesta/target/debug/tempesta ]; then
+    bin="$(realpath ../tempesta/target/debug/tempesta)"
+  else
+    bin="$(command -v tempesta)"
+  fi
+fi
+
+mkdir -p "$dev/store"
+if [ ! -d "$dev/store/.git" ]; then
+  if [ -d "$HOME/.bookmark-store" ]; then
+    (cd "$HOME/.bookmark-store" && find . -name '*.toml' -not -path './.git/*' \
+      -exec cp --parents {} "$dev/store/" \;)
+  fi
+  git -C "$dev/store" init --quiet
+  git -C "$dev/store" add -A
+  git -C "$dev/store" commit --quiet --allow-empty -m "Seed dev store"
+fi
+printf 'git = true\ndir = "%s"\n' "$dev/store" > "$dev/tempesta.toml"
+export TEMPESTA_CONFIG="$dev/tempesta.toml"
+
+npm run --silent build
+
+case "$browser" in
+  firefox)
+    "$bin" native-host install --browser firefox --path "$bin"
+    exec npx web-ext run --source-dir dist/firefox
+    ;;
+  chromium)
+    # Chromium looks for user native hosts inside its user data directory
+    profile="$dev/chromium-profile"
+    mkdir -p "$profile/NativeMessagingHosts"
+    "$bin" native-host install --browser chromium --path "$bin" --print \
+      > "$profile/NativeMessagingHosts/com.x71c9.tempesta.json"
+    exec chromium --user-data-dir="$profile" --no-first-run \
+      --no-default-browser-check --load-extension="$PWD/dist/chromium"
+    ;;
+  *)
+    echo "Usage: scripts/dev-run <firefox|chromium>" >&2
+    exit 1
+    ;;
+esac

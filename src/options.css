@@ -1,0 +1,113 @@
+:root {
+  --bg: #121212;
+  --bg-key: #2a2a2a;
+  --border: #262626;
+  --fg: #c5c8c6;
+  --dim: #707880;
+  --add: #e06c75;
+  --open: #98c379;
+  --error: #cc6666;
+  --star: #f0c674;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  /* The monospace font set in the browser settings */
+  font: 14px/1.5 monospace;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+h1 {
+  margin: 0 0 24px;
+  font-size: 20px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--dim);
+  font-weight: normal;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mode {
+  width: 1%;
+  font-weight: bold;
+}
+
+.mode.add {
+  color: var(--add);
+}
+
+.mode.open {
+  color: var(--open);
+}
+
+kbd {
+  padding: 2px 6px;
+  background: var(--bg-key);
+  border-radius: 2px;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.unset {
+  color: var(--error);
+  white-space: nowrap;
+}
+
+button {
+  padding: 6px 12px;
+  background: var(--bg-key);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--dim);
+}
+
+footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+footer a {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--bg-key);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  text-decoration: none;
+}
+
+footer a:hover {
+  border-color: var(--dim);
+}
+
+.star {
+  color: var(--star);
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Renders icons/icon.svg into the PNG sizes listed in the manifest.
+# Requires rsvg-convert (librsvg).
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+for size in 16 32 48 128; do
+  rsvg-convert --width "$size" --height "$size" icons/icon.svg \
+    --output "icons/icon-$size.png"
+done

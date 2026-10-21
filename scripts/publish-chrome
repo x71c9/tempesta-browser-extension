@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Uploads a package to the Chrome Web Store and submits it for review, through
+# the Chrome Web Store API v2.
+#
+# Usage: scripts/publish-chrome <package.zip>
+# Environment: CWS_TOKEN (OAuth access token with the chromewebstore scope),
+#              CWS_PUBLISHER_ID, CWS_EXTENSION_ID
+set -euo pipefail
+
+package="$1"
+: "${CWS_TOKEN:?}" "${CWS_PUBLISHER_ID:?}" "${CWS_EXTENSION_ID:?}"
+
+item="publishers/$CWS_PUBLISHER_ID/items/$CWS_EXTENSION_ID"
+api="https://chromewebstore.googleapis.com"
+
+request() {
+  curl --fail-with-body --silent --show-error \
+    --header "Authorization: Bearer $CWS_TOKEN" "$@"
+}
+
+echo "Uploading $package"
+response="$(request --request POST --upload-file "$package" "$api/upload/v2/$item:upload")"
+state="$(jq -r .uploadState <<<"$response")"
+
+# Large packages are processed asynchronously
+for _ in $(seq 30); do
+  if [ "$state" != IN_PROGRESS ] && [ "$state" != UPLOAD_IN_PROGRESS ]; then
+    break
+  fi
+  sleep 10
+  state="$(request "$api/v2/$item:fetchStatus" | jq -r .lastAsyncUploadState)"
+done
+if [ "$state" != SUCCEEDED ]; then
+  echo "Upload failed with state $state: $response" >&2
+  exit 1
+fi
+
+echo "Submitting for review"
+request --request POST --header "Content-Type: application/json" --data '{}' \
+  "$api/v2/$item:publish" | jq .
