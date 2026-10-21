@@ -112,8 +112,9 @@ throwaway profile.
 ### Extension IDs
 
 - Firefox: `tempesta-browser-extension@x71c9.com`
-- Chromium (unpacked, fixed by the `key` in `manifests/chromium.json`):
-  `ncogalkimedmckfnjnomdogofbhfenjd`
+- Chromium (Chrome Web Store item; unpacked builds get the same ID from the
+  `key` in `manifests/chromium.json`, the public key of the store item):
+  `mmghkkaaciolnpicbbmdhieeginfpkmf`
 
 Both are allowed by the host manifests written by `tempesta native-host install`.
 
