@@ -7,7 +7,8 @@
 # TEMPESTA_BIN selects the tempesta binary acting as native host
 # (default: ../tempesta/target/debug/tempesta, then tempesta in PATH).
 # Firefox reads native hosts only from ~/.mozilla/native-messaging-hosts, so
-# for Firefox the host manifest is installed there, pointing to TEMPESTA_BIN.
+# for Firefox the host manifest is installed there, pointing to TEMPESTA_BIN,
+# unless that manifest is managed by Nix.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -40,7 +41,14 @@ npm run --silent build
 
 case "$browser" in
   firefox)
-    "$bin" native-host install --browser firefox --path "$bin"
+    manifest="$HOME/.mozilla/native-messaging-hosts/com.x71c9.tempesta.json"
+    # A manifest managed by Nix (home-manager) is a read-only symlink: the
+    # tempesta it points to serves the throwaway store through TEMPESTA_CONFIG
+    if [ -L "$manifest" ]; then
+      echo "Keeping the Nix managed host manifest $manifest"
+    else
+      "$bin" native-host install --browser firefox --path "$bin"
+    fi
     exec npx web-ext run --source-dir dist/firefox
     ;;
   chromium)

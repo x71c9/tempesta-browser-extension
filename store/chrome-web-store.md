@@ -16,20 +16,22 @@ Values entered by hand in the Chrome Web Store Developer Dashboard.
 ### Description
 
 ```
-Browser integration for tempesta, the bookmark manager CLI inspired by pass.
+Save and open bookmarks from the keyboard, with tempesta, the plain-text bookmark manager for the command line.
 
-Two keyboard shortcuts open a minimal rofi-like fuzzy finder over the current page:
+Two shortcuts open a small search bar over the current page:
 
-- Alt+Shift+D adds the current page to the bookmark store: the list of saved paths helps picking the folder, Tab copies a path into the bar, Enter saves.
-- Alt+Shift+O opens a saved bookmark: typing filters paths and URLs, arrows move the selection, Enter opens it in a new tab.
+- Alt+Shift+D saves the current page: typing filters the existing folders, Tab completes the path, Enter saves.
+- Alt+Shift+O opens a saved bookmark: a few letters of its name or address are enough, Enter opens it in a new tab.
 
-A click on the toolbar icon opens the finder in add mode; its right click menu offers both modes.
+The toolbar icon opens the save bar; its right-click menu offers both actions. Shortcuts can be changed in the browser settings.
 
-Bookmarks are plain TOML files in ~/.bookmark-store, optionally versioned with git, shared with the tempesta command line and scripts. Nothing is stored in the browser and nothing is sent anywhere.
+Bookmarks are plain text files in ~/.bookmark-store, one per bookmark, optionally synchronized with git, and shared with the tempesta command line. Nothing is stored in the browser and nothing is sent anywhere.
 
-Requirements: the tempesta CLI (https://github.com/x71c9/tempesta) with its native messaging host registered:
+Setup (Linux and macOS):
 
-    tempesta native-host install
+1. Install tempesta: https://github.com/x71c9/tempesta (AUR, Nix, Homebrew or prebuilt binaries)
+2. Run: tempesta init
+3. Run: tempesta native-host install
 
 Source code: https://github.com/x71c9/tempesta-browser-extension
 ```

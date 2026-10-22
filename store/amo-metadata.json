@@ -1,12 +1,14 @@
 {
   "categories": {
-    "firefox": ["bookmarks"]
+    "firefox": [
+      "bookmarks"
+    ]
   },
   "summary": {
     "en-US": "Keyboard-driven fuzzy finder that adds and opens bookmarks of the tempesta bookmark store."
   },
   "description": {
-    "en-US": "Browser integration for tempesta, the bookmark manager CLI inspired by pass. Two keyboard shortcuts open a minimal rofi-like finder over the current page: one adds the page to the bookmark store, the other opens a saved bookmark in a new tab.\n\nBookmarks are plain TOML files in ~/.bookmark-store, optionally versioned with git, shared with the tempesta command line.\n\nRequires the tempesta CLI with its native messaging host registered (tempesta native-host install). Source code and documentation: https://github.com/x71c9/tempesta-browser-extension"
+    "en-US": "Save and open bookmarks from the keyboard, with tempesta, the plain-text bookmark manager for the command line.\n\nTwo shortcuts open a small search bar over the current page:\n\n- Alt+Shift+D saves the current page: typing filters the existing folders, Tab completes the path, Enter saves.\n- Alt+Shift+O opens a saved bookmark: a few letters of its name or address are enough, Enter opens it in a new tab.\n\nThe toolbar icon opens the save bar; its right-click menu offers both actions. Shortcuts can be changed in the browser settings.\n\nBookmarks are plain text files in ~/.bookmark-store, one per bookmark, optionally synchronized with git, and shared with the tempesta command line. Nothing is stored in the browser and nothing is sent anywhere.\n\nSetup (Linux and macOS):\n\n1. Install tempesta: https://github.com/x71c9/tempesta (AUR, Nix, Homebrew or prebuilt binaries)\n2. Run: tempesta init\n3. Run: tempesta native-host install\n\nSource code: https://github.com/x71c9/tempesta-browser-extension"
   },
   "homepage": {
     "en-US": "https://github.com/x71c9/tempesta-browser-extension"
