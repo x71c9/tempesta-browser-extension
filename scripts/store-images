@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Renders the store screenshots and the promo tile from store/screenshots/src
+# into store/screenshots, as opaque PNGs (the stores reject alpha).
+# Requires chromium.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+src="$PWD/store/screenshots/src"
+out="$PWD/store/screenshots"
+
+render() {
+  local page="$1" size="$2" file="$3"
+  chromium --headless --disable-gpu --hide-scrollbars --allow-file-access-from-files \
+    --default-background-color=ffffffff --window-size="$size" \
+    --screenshot="$out/$file" "file://$src/$page" 2>/dev/null
+}
+
+render "screenshot.html#open" 1280,800 1-open.png
+render "screenshot.html#search" 1280,800 2-open-search.png
+render "screenshot.html#add" 1280,800 3-add.png
+render promo-tile.html 440,280 promo-tile-440x280.png

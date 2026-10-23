@@ -10,6 +10,8 @@ Values entered by hand in the Chrome Web Store Developer Dashboard.
 - Screenshots (1280x800): `store/screenshots/1-open.png`,
   `store/screenshots/2-open-search.png`, `store/screenshots/3-add.png`
 - Small promo tile (440x280): `store/screenshots/promo-tile-440x280.png`
+- Screenshots and promo tile are rendered from `store/screenshots/src` by
+  `scripts/store-images`
 - Homepage URL: https://github.com/x71c9/tempesta-browser-extension
 - Support URL: https://github.com/x71c9/tempesta-browser-extension/issues
 
