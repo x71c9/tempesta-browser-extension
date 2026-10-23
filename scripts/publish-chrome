@@ -19,7 +19,10 @@ request() {
 }
 
 echo "Uploading $package"
-response="$(request --request POST --upload-file "$package" "$api/upload/v2/$item:upload")"
+if ! response="$(request --request POST --upload-file "$package" "$api/upload/v2/$item:upload")"; then
+  echo "Upload rejected: $response" >&2
+  exit 1
+fi
 state="$(jq -r .uploadState <<<"$response")"
 
 # Large packages are processed asynchronously
