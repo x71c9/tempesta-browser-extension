@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # Configure branch protection on `master` so that the PR Validation checks
-# must pass before a PR can be merged. This makes "PR Validation" propaedeutic
-# to "Release on PR Merge": GitHub disables the merge button until the required
-# checks are green, so a release can never run on a failing build.
+# must pass before a PR can be merged: GitHub disables the merge button until
+# the required checks are green, so a failing build never reaches master and
+# cannot be released.
 #
 # The required check names below must match the job `name:` fields in
 # .github/workflows/pr-validation.yml.

@@ -143,14 +143,14 @@ The output is bundled with esbuild but not minified.
 
 ## Release
 
-Merging a PR into `master` releases a new version (see
-[CONTRIBUTING.md](CONTRIBUTING.md)): `release-on-merge.yml` bumps the version
-from the PR title and pushes the tag, `publish.yml` creates the GitHub release
-and submits the version to both stores for review.
+Releases are started by hand (see [CONTRIBUTING.md](CONTRIBUTING.md)):
+`release.yml` bumps the version of `master` and pushes the tag, `publish.yml`
+creates the GitHub release and submits the version to both stores for review.
+Merging a PR into `master` does not release anything.
 
 | Setting | Kind | Used by |
 | ------------------------ | -------- | ------------------------------------------------------ |
-| `BYPASS_BRANCH_RULE_PAT` | secret   | `release-on-merge`: pushes the version bump and the tag |
+| `BYPASS_BRANCH_RULE_PAT` | secret   | `release`: pushes the version bump and the tag          |
 | `AMO_JWT_ISSUER`         | secret   | `publish`: addons.mozilla.org API key                   |
 | `AMO_JWT_SECRET`         | secret   | `publish`: addons.mozilla.org API secret                |
 | `CWS_PUBLISHER_ID`       | variable | `publish`: Chrome Web Store publisher                   |
