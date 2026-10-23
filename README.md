@@ -1,3 +1,14 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+      srcset="https://raw.githubusercontent.com/x71c9/tempesta-browser-extension/HEAD/.github/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)"
+      srcset="https://raw.githubusercontent.com/x71c9/tempesta-browser-extension/HEAD/.github/logo-light.svg">
+    <img alt="Tempesta logo" width="160"
+      src="https://raw.githubusercontent.com/x71c9/tempesta-browser-extension/HEAD/.github/logo-light.svg">
+  </picture>
+</div>
+
 # tempesta-browser-extension
 
 Browser extension for [tempesta](https://github.com/x71c9/tempesta), the
@@ -156,3 +167,9 @@ Listing metadata for addons.mozilla.org lives in `store/amo-metadata.json`.
 ## License
 
 MIT
+
+---
+
+### Credits
+
+Logo credits [https://www.jacopotripodi.com/](https://www.jacopotripodi.com/)
