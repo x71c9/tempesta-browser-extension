@@ -1,0 +1,303 @@
+<!doctype html>
+<!--
+  Store screenshot (1280x800). The scene is chosen by the URL fragment:
+  #open, #search or #add. Rendered by scripts/store-images.
+  The finder reuses src/finder/style.css, so it matches the real one.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../src/finder/style.css">
+<style>
+  html, body {
+    width: 1280px;
+    height: 800px;
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(165deg, #fbfbfc 0%, #eef1f5 55%, #e3e8ef 100%);
+    font-family: "IBM Plex Sans", sans-serif;
+    color: #15171a;
+  }
+
+  .brand {
+    position: absolute;
+    top: 34px;
+    left: 64px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 600 20px "IBM Plex Mono", monospace;
+  }
+
+  .brand img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .keys {
+    position: absolute;
+    top: 34px;
+    right: 64px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 15px "IBM Plex Mono", monospace;
+  }
+
+  .keys span {
+    color: #8a929c;
+  }
+
+  .keys kbd {
+    padding: 4px 9px;
+    background: #ffffff;
+    border: 1px solid #cfd5dd;
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    font: inherit;
+  }
+
+  h1 {
+    position: absolute;
+    top: 96px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 44px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    position: absolute;
+    top: 160px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 20px;
+    color: #4d5560;
+  }
+
+  /* Browser window, cut by the bottom edge of the image */
+  .window {
+    position: absolute;
+    top: 232px;
+    left: 90px;
+    width: 1100px;
+    height: 620px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #d3d9e1;
+    border-radius: 12px;
+    box-shadow: 0 24px 70px rgba(30, 40, 60, 0.18);
+  }
+
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 46px;
+    padding: 0 16px;
+    background: #eceff3;
+    border-bottom: 1px solid #d9dee5;
+  }
+
+  .dots {
+    display: flex;
+    gap: 7px;
+  }
+
+  .dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #c9ced6;
+  }
+
+  .address {
+    flex: 1;
+    padding: 6px 14px;
+    background: #ffffff;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #5b636e;
+  }
+
+  .page {
+    position: relative;
+    height: calc(100% - 47px);
+    padding: 210px 120px 0;
+    box-sizing: border-box;
+  }
+
+  .page h2 {
+    margin: 0 0 18px;
+    font-size: 26px;
+  }
+
+  .page p {
+    margin: 0 0 14px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #3c434c;
+  }
+
+  /* The real backdrop, confined to the page area of the window */
+  .page .backdrop {
+    position: absolute;
+    padding-top: 28px;
+    background: rgba(20, 24, 30, 0.12);
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .page .panel {
+    width: 880px;
+    max-height: none;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 1px;
+    height: 1.1em;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    background: var(--fg);
+  }
+</style>
+</head>
+<body>
+<div class="brand"><img src="../../../.github/logo-light.svg" alt="">tempesta</div>
+<div class="keys" id="keys"></div>
+<h1 id="title"></h1>
+<p class="subtitle" id="subtitle"></p>
+
+<div class="window">
+  <div class="chrome">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <div class="address">example.com/articles/plain-text-bookmarks</div>
+  </div>
+  <div class="page">
+    <h2>Plain text bookmarks</h2>
+    <p>A bookmark is a small file: its path is the name of the bookmark and its content is the URL.
+      Folders group related links, and the whole store fits in a git repository.</p>
+    <p>Every change becomes a commit that can be reviewed, reverted and pushed to a remote,
+      so the same bookmarks follow from one machine to another.</p>
+    <p>The same store works from the terminal, from scripts and from the browser.</p>
+    <div class="backdrop" id="backdrop"></div>
+  </div>
+</div>
+
+<script>
+  const bookmarks = [
+    ["dev/github", "https://github.com/"],
+    ["dev/rust/docs", "https://doc.rust-lang.org/std/"],
+    ["dev/rust/playground", "https://play.rust-lang.org/"],
+    ["dev/rust/crates", "https://crates.io/"],
+    ["dev/nix/packages", "https://search.nixos.org/packages"],
+    ["dev/nix/options", "https://search.nixos.org/options"],
+    ["dev/mdn", "https://developer.mozilla.org/en-US/"],
+    ["news/hacker-news", "https://news.ycombinator.com/"],
+    ["news/lobsters", "https://lobste.rs/"],
+    ["news/lwn", "https://lwn.net/"],
+    ["reference/arch-wiki", "https://wiki.archlinux.org/"],
+    ["reference/man-pages", "https://man7.org/linux/man-pages/"],
+    ["reference/regex", "https://regex101.com/"],
+    ["search/duckduckgo", "https://duckduckgo.com/"],
+    ["search/wikipedia", "https://en.wikipedia.org/"],
+    ["tools/excalidraw", "https://excalidraw.com/"],
+    ["tools/jq-play", "https://jqplay.org/"],
+    ["music/radio-paradise", "https://radioparadise.com/"],
+  ];
+
+  const scenes = {
+    open: {
+      title: "Open any bookmark from the keyboard",
+      subtitle: "One shortcut shows the whole tempesta store over the current page.",
+      keys: ["Alt", "Shift", "O"],
+      mode: "open",
+      query: "",
+      items: bookmarks.slice(0, 11),
+    },
+    search: {
+      title: "Fuzzy search as you type",
+      subtitle: "A few letters of the path narrow the list; Enter opens the selected bookmark.",
+      keys: ["Alt", "Shift", "O"],
+      mode: "open",
+      query: "rust",
+      items: bookmarks.filter(([path]) => path.includes("rust")),
+      highlight: "rust",
+    },
+    add: {
+      title: "Save the current page in one shortcut",
+      subtitle: "Tab completes existing folders, Enter writes the bookmark to ~/.bookmark-store.",
+      keys: ["Alt", "Shift", "D"],
+      mode: "add",
+      query: "dev/rust/",
+      items: bookmarks.filter(([path]) => path.startsWith("dev/rust/")),
+      highlight: "dev/rust/",
+      status: "→ https://example.com/articles/plain-text-bookmarks",
+    },
+  };
+
+  const scene = scenes[location.hash.slice(1)] ?? scenes.open;
+
+  const el = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  document.getElementById("title").textContent = scene.title;
+  document.getElementById("subtitle").textContent = scene.subtitle;
+  const keys = document.getElementById("keys");
+  scene.keys.forEach((key, index) => {
+    if (index > 0) keys.append(el("span", "", "+"));
+    keys.append(el("kbd", "", key));
+  });
+
+  const panel = el("div", `panel ${scene.mode}`);
+  const bar = el("div", "bar");
+  const input = el("span", "input");
+  if (scene.query) {
+    input.append(scene.query, el("span", "cursor"));
+  } else {
+    input.append(el("span", "cursor"));
+    const placeholder = el("span", "", "search");
+    placeholder.style.color = "var(--dim)";
+    placeholder.style.marginLeft = "1px";
+    input.append(placeholder);
+  }
+  bar.append(
+    el("span", "prompt", scene.mode),
+    input,
+    el("span", "count", `${scene.query ? scene.items.length : bookmarks.length}/${bookmarks.length}`),
+  );
+
+  const list = el("ul", "list");
+  scene.items.forEach(([path, url], index) => {
+    const item = el("li", index === 0 ? "item selected" : "item");
+    const pathNode = el("span", "path");
+    const at = scene.highlight ? path.indexOf(scene.highlight) : -1;
+    if (at >= 0) {
+      pathNode.append(
+        path.slice(0, at),
+        el("span", "match", scene.highlight),
+        path.slice(at + scene.highlight.length),
+      );
+    } else {
+      pathNode.textContent = path;
+    }
+    item.append(pathNode, el("span", "url", url));
+    list.append(item);
+  });
+
+  panel.append(bar, list);
+  if (scene.status) panel.append(el("div", "status", scene.status));
+  document.getElementById("backdrop").append(panel);
+</script>
+</body>
+</html>

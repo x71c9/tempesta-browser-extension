@@ -1,0 +1,94 @@
+<!doctype html>
+<!--
+  Small promo tile (440x280) for the Chrome Web Store, rendered by
+  scripts/store-images. Tempesta is Italian for storm: the star of the logo
+  shines through the rain.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body {
+    width: 440px;
+    height: 280px;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  body {
+    position: relative;
+    background: #000000;
+    font-family: "IBM Plex Mono", monospace;
+    color: #ffffff;
+  }
+
+  #rain {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Light of the star, spreading into the storm */
+  .halo {
+    position: absolute;
+    left: 110px;
+    top: -12px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 45%, transparent 70%);
+  }
+
+  .star {
+    position: absolute;
+    left: 150px;
+    top: 28px;
+    width: 140px;
+    height: 140px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  }
+
+  .name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 196px;
+    text-align: center;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+<svg id="rain" width="440" height="280" viewBox="0 0 440 280"></svg>
+<div class="halo"></div>
+<img class="star" src="../../../.github/logo-dark.svg" alt="">
+<div class="name">Tempesta</div>
+<script>
+  // Fixed seed: the same rain on every render
+  let seed = 7;
+  const random = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  const rain = document.getElementById("rain");
+  const angle = (16 * Math.PI) / 180;
+  for (let i = 0; i < 90; i++) {
+    const x = random() * 480 - 20;
+    const y = random() * 300 - 20;
+    const length = 12 + random() * 26;
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x - Math.sin(angle) * length);
+    line.setAttribute("y2", y + Math.cos(angle) * length);
+    line.setAttribute("stroke", "#ffffff");
+    line.setAttribute("stroke-width", random() < 0.25 ? 1.2 : 0.8);
+    line.setAttribute("stroke-linecap", "round");
+    line.setAttribute("stroke-opacity", (0.06 + random() * 0.14).toFixed(2));
+    rain.append(line);
+  }
+</script>
+</body>
+</html>

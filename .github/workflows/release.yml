@@ -1,12 +1,20 @@
 ---
-# Bumps the version from the squashed PR title (feat! -> major, feat -> minor,
-# everything else -> patch), commits it and pushes the vX.Y.Z tag, which
-# triggers publish.yml.
-name: Release on PR Merge
+# Started by hand (Actions > Release > Run workflow, or
+# `gh workflow run release.yml -f bump=minor`): bumps the version of master,
+# commits it and pushes the vX.Y.Z tag, which triggers publish.yml.
+# Manual so that a new version is sent to the stores only when the previous
+# one is out of review: the Chrome Web Store rejects uploads while an item is
+# pending review.
+name: Release
 on:
-  pull_request:
-    types: [closed]
-    branches: [master]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump"
+        required: true
+        default: patch
+        type: choice
+        options: [patch, minor, major]
 permissions:
   contents: read
 concurrency:
@@ -16,7 +24,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -36,19 +43,10 @@ jobs:
           git config user.name "x71c9"
           git config user.email "108585118+x71c9@users.noreply.github.com"
 
-      - name: Determine bump type and release
+      - name: Bump version and release
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          BUMP_TYPE: ${{ inputs.bump }}
         run: |
-          echo "PR title: $PR_TITLE"
-          if echo "$PR_TITLE" | grep -qE "^[a-z]+(\(.+\))?!:" || \
-             echo "$PR_TITLE" | grep -q "BREAKING CHANGE:"; then
-            BUMP_TYPE="major"
-          elif echo "$PR_TITLE" | grep -qE "^feat(\(.+\))?:"; then
-            BUMP_TYPE="minor"
-          else
-            BUMP_TYPE="patch"
-          fi
           echo "Version bump: $BUMP_TYPE"
           npm version "$BUMP_TYPE" --message "chore(release): release v%s"
           VERSION="v$(node -p 'require("./package.json").version')"
