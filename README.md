@@ -19,6 +19,18 @@ rofi-like fuzzy finder over the current page, backed by the same
 Built for Firefox and Chromium-based browsers (Chromium, Chrome, Brave) from a
 single code base.
 
+## Install
+
+| Browser | Store |
+| ------- | ----- |
+| Firefox | [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/tempesta-browser-extension/) |
+| Chromium, Chrome, Brave | [Chrome Web Store](https://chromewebstore.google.com/detail/mmghkkaaciolnpicbbmdhieeginfpkmf) |
+
+The extension does nothing on its own: it needs `tempesta` registered as its
+native messaging host (see [Requirements](#requirements)). Packages of every
+version are also attached to the
+[GitHub releases](https://github.com/x71c9/tempesta-browser-extension/releases).
+
 ## How it works
 
 ```
@@ -33,13 +45,53 @@ Bookmarks added from the browser are committed and pushed exactly like
 
 ## Requirements
 
-- `tempesta` with the `native-host` command, initialized with `tempesta init`
+- `tempesta` 0.3.0 or later (the first version with the `native-host`
+  command), initialized with `tempesta init`
 - the native messaging host registered for the browser in use:
 
 ```bash
 tempesta native-host install                    # every installed browser
 tempesta native-host install --browser firefox  # firefox, chromium, chrome, brave
 ```
+
+When the host cannot be started, the finder shows
+`tempesta not reachable (...)` with the browser error.
+
+### Declarative setup (Nix)
+
+`tempesta native-host install --print` writes the host manifest to stdout
+instead of installing it, so that it can be generated at build time. A
+home-manager example that installs the extension from the stores (both
+browsers then keep it on the latest version) and registers the host:
+
+```nix
+let
+  tempesta = pkgs.nur.repos.x71c9.tempesta;
+  nativeHost = browser: pkgs.runCommand "tempesta-native-host-${browser}.json" { } ''
+    ${tempesta}/bin/tempesta native-host install --browser ${browser} \
+      --path ${tempesta}/bin/tempesta --print > $out
+  '';
+in
+{
+  home.packages = [ tempesta ];
+
+  home.file.".mozilla/native-messaging-hosts/com.x71c9.tempesta.json".source = nativeHost "firefox";
+  programs.firefox.policies.ExtensionSettings."tempesta-browser-extension@x71c9.com" = {
+    install_url = "https://addons.mozilla.org/firefox/downloads/latest/tempesta-browser-extension/latest.xpi";
+    installation_mode = "force_installed";
+  };
+
+  home.file.".config/chromium/NativeMessagingHosts/com.x71c9.tempesta.json".source = nativeHost "chromium";
+  programs.chromium.extensions = [ { id = "mmghkkaaciolnpicbbmdhieeginfpkmf"; } ];
+}
+```
+
+Chromium reads user-level hosts from `<user-data-dir>/NativeMessagingHosts`:
+profiles started with `--user-data-dir` do not see the manifest in
+`~/.config/chromium`. A system-wide manifest in
+`/etc/chromium/native-messaging-hosts` (NixOS: `environment.etc`) serves every
+profile, and the `ExtensionInstallForcelist` policy installs the extension in
+every profile.
 
 ## Usage
 
