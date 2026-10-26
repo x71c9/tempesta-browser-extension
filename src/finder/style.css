@@ -37,6 +37,7 @@
 }
 
 .bar {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -124,6 +125,9 @@
 }
 
 .status {
+  /* overflow: hidden lets a flex item shrink to nothing when the list fills
+     the panel */
+  flex: none;
   padding: 6px 12px;
   border-top: 1px solid var(--border);
   overflow: hidden;
