@@ -149,6 +149,97 @@
   color: var(--error);
 }
 
+/* add: the page to save on the left, the shortcut hint on the right */
+.status.idle {
+  display: flex;
+  gap: 16px;
+}
+
+.status .page {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status .keys {
+  flex: none;
+}
+
+/* Spinner of the running requests */
+.spinner {
+  display: inline-block;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  border: 2px solid var(--border);
+  border-top-color: var(--fg);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Confirmation dialog of the add mode, over the panel */
+.dialog {
+  display: none;
+}
+
+.dialog.open {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: calc(15vh + 56px);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  width: min(640px, calc(100vw - 64px));
+  padding: 12px 14px;
+  background: var(--bg-hover);
+  border: 1px solid #333333;
+  border-left: 2px solid var(--add);
+  border-radius: 2px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.box .title {
+  color: var(--add);
+  font-weight: bold;
+}
+
+.box .target {
+  overflow-wrap: anywhere;
+}
+
+.box .url {
+  flex: none;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.box .hint {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--dim);
+  font-size: 12px;
+}
+
 /* Finder inside the popup window */
 html,
 body {
@@ -169,4 +260,8 @@ body {
   border: 0;
   border-radius: 0;
   box-shadow: none;
+}
+
+.fallback .dialog.open {
+  padding-top: 56px;
 }

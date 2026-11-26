@@ -22,7 +22,7 @@ Save and open bookmarks from the keyboard, with tempesta, the plain-text bookmar
 
 Two shortcuts open a small search bar over the current page:
 
-- Alt+Shift+D saves the current page: typing filters the existing folders, Tab completes the path, Enter saves.
+- Alt+Shift+D saves the current page: typing filters the existing folders, Tab completes the path, Enter saves after a confirmation (Ctrl+Enter skips it).
 - Alt+Shift+O opens a saved bookmark: a few letters of its name or address are enough, Enter opens it in a new tab.
 
 The toolbar icon opens the save bar; its right-click menu offers both actions. Shortcuts can be changed in the browser settings.

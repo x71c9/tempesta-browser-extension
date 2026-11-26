@@ -6,6 +6,8 @@
 #
 # TEMPESTA_BIN selects the tempesta binary acting as native host
 # (default: ../tempesta/target/debug/tempesta, then tempesta in PATH).
+# PUSH_DELAY=<seconds> adds a local remote that answers pushes after that
+# delay, to see the progress of a slow save.
 # Firefox reads native hosts only from ~/.mozilla/native-messaging-hosts, so
 # for Firefox the host manifest is installed there, pointing to TEMPESTA_BIN,
 # unless that manifest is managed by Nix.
@@ -37,10 +39,24 @@ fi
 printf 'git = true\ndir = "%s"\n' "$dev/store" > "$dev/tempesta.toml"
 export TEMPESTA_CONFIG="$dev/tempesta.toml"
 
-npm run --silent build
+# PUSH_DELAY=<seconds>: saves push to a local remote that answers after that
+# delay, as a slow remote would (progress of the save in the finder)
+if [ -n "${PUSH_DELAY:-}" ]; then
+  remote="$dev/remote.git"
+  if [ ! -d "$remote" ]; then
+    git init --quiet --bare "$remote"
+  fi
+  printf '#!/usr/bin/env bash\nsleep %s\n' "$PUSH_DELAY" > "$remote/hooks/pre-receive"
+  chmod +x "$remote/hooks/pre-receive"
+  if ! git -C "$dev/store" remote get-url origin >/dev/null 2>&1; then
+    git -C "$dev/store" remote add origin "$remote"
+  fi
+  printf 'remote = "%s"\n' "$remote" >> "$dev/tempesta.toml"
+fi
 
 case "$browser" in
   firefox)
+    npm run --silent build
     manifest="$HOME/.mozilla/native-messaging-hosts/com.x71c9.tempesta.json"
     # A manifest managed by Nix (home-manager) is a read-only symlink: the
     # tempesta it points to serves the throwaway store through TEMPESTA_CONFIG
@@ -52,13 +68,28 @@ case "$browser" in
     exec npx web-ext run --source-dir dist/firefox
     ;;
   chromium)
+    # A browser policy forcing the Chrome Web Store version
+    # (ExtensionInstallForcelist) would replace an unpacked build with the same
+    # ID, or keep the shortcuts and open its options page next to it:
+    # the build leaves out the `key`, so its ID is derived from its path and
+    # added to the allowed origins of the host manifest, and
+    # --disable-extensions-except keeps every other extension out
+    node build.mjs --release >/dev/null
+    extension="$(realpath dist/chromium)"
+    id="$(printf '%s' "$extension" | sha256sum | head -c 32 | tr '0-9a-f' 'a-p')"
     # Chromium looks for user native hosts inside its user data directory
     profile="$dev/chromium-profile"
     mkdir -p "$profile/NativeMessagingHosts"
     "$bin" native-host install --browser chromium --path "$bin" --print \
-      > "$profile/NativeMessagingHosts/com.x71c9.tempesta.json"
+      | node -e '
+        const host = JSON.parse(require("fs").readFileSync(0, "utf8"));
+        host.allowed_origins.push(`chrome-extension://${process.argv[1]}/`);
+        console.log(JSON.stringify(host, null, 2));
+      ' "$id" > "$profile/NativeMessagingHosts/com.x71c9.tempesta.json"
+    echo "Development build: chrome-extension://$id"
     exec chromium --user-data-dir="$profile" --no-first-run \
-      --no-default-browser-check --load-extension="$PWD/dist/chromium"
+      --no-default-browser-check --load-extension="$extension" \
+      --disable-extensions-except="$extension"
     ;;
   *)
     echo "Usage: scripts/dev-run <firefox|chromium>" >&2
