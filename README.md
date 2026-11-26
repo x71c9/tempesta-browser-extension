@@ -200,21 +200,26 @@ Releases are started by hand (see [CONTRIBUTING.md](CONTRIBUTING.md)):
 creates the GitHub release and submits the version to both stores for review.
 Merging a PR into `master` does not release anything.
 
-| Setting | Kind | Used by |
-| ------------------------ | -------- | ------------------------------------------------------ |
-| `BYPASS_BRANCH_RULE_PAT` | secret   | `release`: pushes the version bump and the tag          |
-| `AMO_JWT_ISSUER`         | secret   | `publish`: addons.mozilla.org API key                   |
-| `AMO_JWT_SECRET`         | secret   | `publish`: addons.mozilla.org API secret                |
-| `CWS_PUBLISHER_ID`       | variable | `publish`: Chrome Web Store publisher                   |
-| `CWS_EXTENSION_ID`       | variable | `publish`: Chrome Web Store item                        |
+| Setting                                       | Kind     | Used by                                                  |
+| --------------------------------------------- | -------- | -------------------------------------------------------- |
+| `BYPASS_BRANCH_RULE_PAT`                      | secret   | `release`: pushes the version bump and the tag           |
+| `FIREFOX_ADDONS_JWT_ISSUER`                   | secret   | `publish`: addons.mozilla.org API key                    |
+| `FIREFOX_ADDONS_JWT_SECRET`                   | secret   | `publish`: addons.mozilla.org API secret                 |
+| `CHROME_WEB_STORE_PUBLISHER_ID`               | variable | `publish`: Chrome Web Store publisher                    |
+| `CHROME_WEB_STORE_EXTENSION_ID`               | variable | `publish`: Chrome Web Store item                         |
+| `CHROME_WEB_STORE_WORKLOAD_IDENTITY_PROVIDER` | variable | `publish`: Google Cloud provider for this repository     |
+| `CHROME_WEB_STORE_SERVICE_ACCOUNT`            | variable | `publish`: service account registered with the publisher |
 
 The Chrome Web Store is reached without stored credentials, through Workload
 Identity Federation: Google trusts GitHub Actions tokens issued for release tags
 of this repository and lets them act as a service account registered with the
-Chrome Web Store publisher. `scripts/setup-cws-publishing` creates the Google
-Cloud side.
+Chrome Web Store publisher. The Google Cloud project `browser-extensions-x71c9`
+is shared by all the browser extensions, with one provider per repository;
+`scripts/setup-chrome-web-store-publishing` creates the Google Cloud side and
+prints the two `CHROME_WEB_STORE_*` values above.
 
-Listing metadata for addons.mozilla.org lives in `store/amo-metadata.json`.
+Listing metadata for addons.mozilla.org lives in
+`store/firefox-addons-metadata.json`.
 
 ## License
 

@@ -3,19 +3,19 @@
 # the Chrome Web Store API v2.
 #
 # Usage: scripts/publish-chrome <package.zip>
-# Environment: CWS_TOKEN (OAuth access token with the chromewebstore scope),
-#              CWS_PUBLISHER_ID, CWS_EXTENSION_ID
+# Environment: CHROME_WEB_STORE_TOKEN (OAuth access token with the chromewebstore scope),
+#              CHROME_WEB_STORE_PUBLISHER_ID, CHROME_WEB_STORE_EXTENSION_ID
 set -euo pipefail
 
 package="$1"
-: "${CWS_TOKEN:?}" "${CWS_PUBLISHER_ID:?}" "${CWS_EXTENSION_ID:?}"
+: "${CHROME_WEB_STORE_TOKEN:?}" "${CHROME_WEB_STORE_PUBLISHER_ID:?}" "${CHROME_WEB_STORE_EXTENSION_ID:?}"
 
-item="publishers/$CWS_PUBLISHER_ID/items/$CWS_EXTENSION_ID"
+item="publishers/$CHROME_WEB_STORE_PUBLISHER_ID/items/$CHROME_WEB_STORE_EXTENSION_ID"
 api="https://chromewebstore.googleapis.com"
 
 request() {
   curl --fail-with-body --silent --show-error \
-    --header "Authorization: Bearer $CWS_TOKEN" "$@"
+    --header "Authorization: Bearer $CHROME_WEB_STORE_TOKEN" "$@"
 }
 
 echo "Uploading $package"
