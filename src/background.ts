@@ -43,9 +43,21 @@ api.runtime.onInstalled.addListener(async ({ reason }) => {
   if (reason !== "install") {
     return;
   }
-  // Browsers silently drop default shortcuts that conflict with existing ones
+  // Installs forced by a policy can happen at every browser start (e.g. new
+  // profiles): the options page would open each time
+  const self = await api.management.getSelf();
+  if (self.installType === "admin") {
+    return;
+  }
+  // Browsers silently drop default shortcuts that conflict with existing ones.
+  // getAll() also lists built-in commands such as _execute_action, which have
+  // no default shortcut: only the extension's own commands are checked
   const commands = await api.commands.getAll();
-  if (commands.some((command) => !command.shortcut)) {
+  if (
+    commands.some(
+      (command) => command.name && COMMANDS[command.name] && !command.shortcut,
+    )
+  ) {
     await api.runtime.openOptionsPage();
   }
 });

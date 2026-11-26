@@ -107,24 +107,29 @@ Shortcuts are configurable in `about:addons` → *Manage Extension Shortcuts*
 (Firefox) and `chrome://extensions/shortcuts` (Chromium). The extension options
 page lists the current shortcuts and links to those settings; browsers drop
 a default shortcut that conflicts with an existing one, so on install the
-options page opens when a shortcut is left unassigned.
+options page opens when a shortcut is left unassigned (not for installs
+forced by a browser policy, which can happen at every browser start).
 
 Pressing the same shortcut again, `Esc` or a click outside the finder closes
-it. On pages that do not allow extensions (browser pages, extension stores,
+it; switching to another window leaves it open. On pages that do not allow extensions (browser pages, extension stores,
 the new tab page) the finder opens in a small popup window instead.
 
 ### Add
 
 The list shows every saved path; typing filters it.
 
-| Key / action    | Effect                                                  |
-| --------------- | ------------------------------------------------------- |
-| `Tab` / click   | Copy the selected path into the bar                     |
-| `↑` `↓`         | Move the selection                                      |
-| `Enter`         | Save the current page at the path written in the bar    |
+| Key / action    | Effect                                                     |
+| --------------- | ---------------------------------------------------------- |
+| `↑` `↓`         | Move the selection                                         |
+| `Tab` / click   | Copy the selected path into the bar                        |
+| `Enter`         | After `↑` `↓`: copy the selected path into the bar         |
+|                 | Otherwise: ask to confirm saving at the path in the bar    |
+| `Ctrl+Enter`    | Save at the path in the bar without confirmation           |
 
-When the path already exists, a second `Enter` overwrites it (keeping its
-tags) and `Esc` cancels.
+In the confirmation, `Enter` saves and `Esc` goes back to the bar. While the
+page is saved (bookmark file, git commit and push) a spinner shows the
+elapsed time. When the path already exists, `Enter` overwrites it (keeping
+its tags) and `Esc` goes back to the bar.
 
 ### Open
 
@@ -152,7 +157,10 @@ the bookmark files in `~/.bookmark-store`. The native host binary defaults to
 `../tempesta/target/debug/tempesta` (override with `TEMPESTA_BIN`). For
 Firefox the host manifest is installed in `~/.mozilla/native-messaging-hosts`,
 the only location Firefox reads; for Chromium it is placed inside the
-throwaway profile.
+throwaway profile. The Chromium build leaves out the `key` and every other
+extension is disabled, so a browser policy forcing the Chrome Web Store version
+does not take its place. `PUSH_DELAY=<seconds>` adds a local remote that
+answers pushes after that delay, to see the progress of a slow save.
 
 `scripts/icons` renders `icons/icon.svg` into the PNG sizes (requires
 `rsvg-convert`).
