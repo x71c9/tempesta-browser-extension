@@ -11,18 +11,20 @@
 # Idempotent: existing resources are left untouched. Prints the values used by
 # .github/workflows/publish.yml.
 #
-# Usage: scripts/setup-cws-publishing
-# Overrides: GCLOUD_ACCOUNT, PROJECT_ID
+# Usage: scripts/setup-chrome-web-store-publishing
+# Overrides: GCLOUD_ACCOUNT, PROJECT_ID, PROJECT_NAME
+# The project is shared by all the browser extensions: each repository gets
+# its own OIDC provider and service account binding in the same pool.
 # Requires: gcloud, logged in with `gcloud auth login <account>`
 set -euo pipefail
 
 ACCOUNT="${GCLOUD_ACCOUNT:-amministrazione@nebula7.net}"
-PROJECT_ID="${PROJECT_ID:-tempesta-x71c9}"
-PROJECT_NAME="Tempesta"
+PROJECT_ID="${PROJECT_ID:-browser-extensions-x71c9}"
+PROJECT_NAME="${PROJECT_NAME:-Browser extensions}"
 REPOSITORY="x71c9/tempesta-browser-extension"
 POOL="github"
 PROVIDER="tempesta-browser-extension"
-SERVICE_ACCOUNT="cws-publisher"
+SERVICE_ACCOUNT="chrome-web-store-publisher"
 SERVICE_ACCOUNT_EMAIL="$SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com"
 
 g() {
@@ -86,3 +88,7 @@ echo "service_account:            $SERVICE_ACCOUNT_EMAIL"
 echo
 echo "Add $SERVICE_ACCOUNT_EMAIL to the Chrome Web Store Developer Dashboard,"
 echo "under Account -> Service account."
+echo
+echo "Store both values as repository variables, read by publish.yml:"
+echo "  gh variable set CHROME_WEB_STORE_WORKLOAD_IDENTITY_PROVIDER --body '$pool_path/providers/$PROVIDER'"
+echo "  gh variable set CHROME_WEB_STORE_SERVICE_ACCOUNT --body '$SERVICE_ACCOUNT_EMAIL'"
