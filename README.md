@@ -19,6 +19,8 @@ rofi-like fuzzy finder over the current page, backed by the same
 Built for Firefox and Chromium-based browsers (Chromium, Chrome, Brave) from a
 single code base.
 
+https://github.com/user-attachments/assets/743f65cc-030e-4201-80a4-c3a93807d966
+
 ## Install
 
 | Browser | Store |
