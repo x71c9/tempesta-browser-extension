@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Tempesta",
+  "name": "Tempesta – Private Bookmark Manager",
+  "short_name": "Tempesta",
   "description": "Keyboard-driven fuzzy finder that adds and opens bookmarks of the tempesta bookmark store.",
   "homepage_url": "https://github.com/x71c9/tempesta-browser-extension",
   "permissions": [
