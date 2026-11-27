@@ -1,6 +1,6 @@
 {
   "name": "tempesta-browser-extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Browser extension for the tempesta bookmark store",
   "license": "MIT",
