@@ -174,10 +174,18 @@ export function createFinder(
     input.focus();
   }
 
-  function showDialog(title: string, hint: string): void {
+  // The footer shows Esc on the left and the Enter action on the right;
+  // without an action it stays empty, for the progress of the save
+  function showDialog(title: string, action?: string): void {
     const path = input.value.trim();
     const box = element("div", "box");
-    const footer = element("div", "hint", hint);
+    const footer = element("div", "hint");
+    if (action) {
+      footer.append(
+        keyHint("back", "Esc", "back"),
+        keyHint("confirm", "Enter", action),
+      );
+    }
     box.append(
       element("div", "title", title),
       element("div", "target", path),
@@ -202,7 +210,7 @@ export function createFinder(
       return;
     }
     setStage("confirm");
-    showDialog("save", "Enter save · Esc back");
+    showDialog("save", "save");
   }
 
   async function save(overwrite: boolean): Promise<void> {
@@ -212,7 +220,7 @@ export function createFinder(
       return;
     }
     setStage("busy");
-    showDialog(overwrite ? "overwrite" : "save", "");
+    showDialog(overwrite ? "overwrite" : "save");
     const hint = dialog.querySelector<HTMLElement>(".hint");
     if (hint) {
       showProgress(hint, "saving…");
@@ -228,10 +236,7 @@ export function createFinder(
     } else if (response.code === "exists") {
       stopProgress();
       setStage("overwrite");
-      showDialog(
-        "already exists",
-        "Enter overwrite (keeps the tags) · Esc back",
-      );
+      showDialog("already exists", "overwrite (keeps the tags)");
     } else {
       hideDialog();
       showError(response.code, response.message);
@@ -385,6 +390,13 @@ export function createFinder(
       showError(response.code, response.message);
     }
   });
+}
+
+// A key and what it does, e.g. "Enter save"
+function keyHint(className: string, key: string, label: string): HTMLElement {
+  const hint = element("span", className);
+  hint.append(element("span", "key", key), ` ${label}`);
+  return hint;
 }
 
 function element<K extends keyof HTMLElementTagNameMap>(
